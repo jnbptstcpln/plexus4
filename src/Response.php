@@ -325,7 +325,7 @@ class Response {
 
         $this->setStatusCode(200);
         $this->header('Content-type', $mimetype);
-        $this->header('Content-Disposition', (($download) ? 'attachement' : 'inline') . '; filename="'.$filename.'"');
+        $this->header('Content-Disposition', (($download) ? 'attachment' : 'inline') . '; filename="'.$filename.'"');
         $this->header('Content-length', filesize($filepath));
 
         // Send our response data
@@ -387,7 +387,7 @@ class Response {
         $this->setStatusCode(200);
         $this->header('X-Sendfile', $filepath);
         $this->header('Content-type', $mimetype);
-        $this->header('Content-Disposition', (($download) ? 'attachement' : 'inline') . '; filename="'.$filename.'"');
+        $this->header('Content-Disposition', (($download) ? 'attachment' : 'inline') . '; filename="'.$filename.'"');
 
         // Send our response data
         $this->sendHeaders();
