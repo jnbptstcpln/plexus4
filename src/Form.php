@@ -231,11 +231,16 @@ class Form extends AbstractRuntime implements Component {
     /**
      * @param $array
      */
-    public function fillWithArray($array) {
+    public function fillWithArray($array, $raw_values=false) {
         $array = new Collection($array);
-        $this->fields->each(function ($id, AbstractField $field) use ($array) {
+        $this->fields->each(function ($id, AbstractField $field) use ($array, $raw_values) {
             if (!$field->isDisabled()) {
-                $field->setDisplayValue($array->get($field->getName()));
+                if ($raw_values) {
+                    $field->setValue($array->get($field->getName()));
+                } else {
+                    $field->setDisplayValue($array->get($field->getName()));
+                }
+
             }
         });
     }
@@ -244,7 +249,7 @@ class Form extends AbstractRuntime implements Component {
      * @param Model $model
      */
     public function fillWithModel(Model $model) {
-        $this->fillWithArray($model->toArray());
+        $this->fillWithArray($model->toArray(), true);
     }
 
     /**
