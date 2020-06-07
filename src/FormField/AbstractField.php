@@ -69,6 +69,11 @@ abstract class AbstractField {
     /**
      * @var Collection
      */
+    protected $raw_validators;
+
+    /**
+     * @var Collection
+     */
     protected $errors;
 
     /**
@@ -90,6 +95,7 @@ abstract class AbstractField {
         $this->id = $id;
         $this->value = "";
         $this->validators = new Collection();
+        $this->raw_validators = new Collection();
         $this->errors = new Collection();
         $this->settings = $this->buildSetting(new Collection($settings));
 
@@ -103,6 +109,11 @@ abstract class AbstractField {
         $validators = new Collection($this->settings->get('validators', []));
         $validators->each(function($i, AbstractValidator $validator) {
             $this->addValidator($validator);
+        });
+
+        $raw_validators = new Collection($this->settings->get('raw_validators', []));
+        $raw_validators->each(function($i, AbstractValidator $validator) {
+            $this->addRawValidator($validator);
         });
     }
 
@@ -121,6 +132,7 @@ abstract class AbstractField {
             'help_text' => $settings->get('help_text'),
             'error_display' => $settings->get('error_display', 'inline'),
             'validators' => $settings->get('validators', new Collection()),
+            'raw_validators' => $settings->get('raw_validators', new Collection()),
             'has_error' => $settings->get('class_error', true)
         ]);
     }
@@ -140,7 +152,7 @@ abstract class AbstractField {
     /**
      * @return bool
      */
-    private function _validate() {
+    protected function _validate() {
 
         $this->errors = new Collection();
 
@@ -154,6 +166,14 @@ abstract class AbstractField {
 
         $this->validators->each(function($i, AbstractValidator $validator) {
             if (!$validator->validate($this->getDisplayValue())) {
+                $this->errors->push($validator->getError());
+                return !$validator->getStopValidation();
+            }
+            return true;
+        });
+
+        $this->raw_validators->each(function($i, AbstractValidator $validator) {
+            if (!$validator->validate($this->getValue())) {
                 $this->errors->push($validator->getError());
                 return !$validator->getStopValidation();
             }
@@ -266,7 +286,7 @@ abstract class AbstractField {
     public function renderHelpText() {
         $help_text = "";
         if ($this->settings->get('help_text', null) !== null) {
-            $help_text = sprintf("<p class=\"help-text\">%s</p>", htmlspecialchars($this->settings->get('help_text', '')));
+            $help_text = sprintf("<p class=\"text-help\">%s</p>", htmlspecialchars($this->settings->get('help_text', '')));
         }
         return $help_text;
     }
@@ -398,6 +418,19 @@ abstract class AbstractField {
      */
     public function addValidator(AbstractValidator $validator) {
         $this->validators->push($validator);
+        $validator->alterField($this);
+        if ($this->runtime) {
+            $validator->setRuntime($this->runtime);
+        }
+        return $this;
+    }
+
+    /**
+     * @param AbstractValidator $validator
+     * @return $this
+     */
+    public function addRawValidator(AbstractValidator $validator) {
+        $this->raw_validators->push($validator);
         $validator->alterField($this);
         if ($this->runtime) {
             $validator->setRuntime($this->runtime);
