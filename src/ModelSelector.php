@@ -41,7 +41,7 @@ class ModelSelector {
         $this->type = $type;
         $this->condition = $condition;
         $this->mapping = $mapping;
-        $this->options;
+        $this->options = $options;
     }
 
     /**
