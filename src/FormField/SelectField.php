@@ -14,6 +14,9 @@ use Plexus\FormValidator\CollectionValidator;
 
 class SelectField extends AbstractField {
 
+    const OPTIONS_MODE_INDEX = 1;
+    const OPTIONS_MODE_VALUE = 2;
+
     /**
      * @var Collection
      */
@@ -38,8 +41,13 @@ class SelectField extends AbstractField {
                 $this->options->push(new Collection(['value' => $option->value, 'label' => $option->label]));
                 $_options[$option->value] = $option->label;
             } else {
-                $this->options->push(new Collection(['value' => $i, 'label' => $option]));
-                $_options[$i] = $option;
+                if ($this->settings->get("options_mode") == self::OPTIONS_MODE_INDEX) {
+                    $this->options->push(new Collection(['value' => $i, 'label' => $option]));
+                    $_options[$i] = $option;
+                } else {
+                    $this->options->push(new Collection(['value' => $option, 'label' => $option]));
+                    $_options[$option] = $option;
+                }
             }
         });
 
@@ -55,6 +63,7 @@ class SelectField extends AbstractField {
     public function buildSetting(Collection $settings) {
         $collection =  parent::buildSetting($settings);
         $collection->set('placeholder', $settings->get('placeholder'));
+        $collection->set('options_mode', $settings->get('options_mode', self::OPTIONS_MODE_INDEX));
         return $collection;
     }
 
