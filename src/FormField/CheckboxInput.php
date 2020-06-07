@@ -55,7 +55,7 @@ class CheckboxInput extends Input {
      */
     public function setDisplayValue($value) {
         if (is_bool($value) || is_int($value)) {
-            $this->value = (bool) $value ? $this->name : '';
+            $this->displayedValue = (bool) $value ? $this->name : '';
         } else {
             $this->displayedValue = $value;
         }
@@ -67,6 +67,7 @@ class CheckboxInput extends Input {
      * @return string
      */
     public function _render($options=[]) {
+
         $options = new Collection($options);
 
         $output = "";
@@ -84,7 +85,7 @@ class CheckboxInput extends Input {
             $this->getValue() && $options->get('render_value', true) ? 'checked' : ''
         );
         if ($options->get('render_label', true)) {
-            $output .= sprintf("<label for='%s'>%s %s%s</label>", htmlspecialchars($this->id), $input, htmlspecialchars($this->label), $this->required ? ' <b>*</b>' : '');
+            $output .= sprintf("%s<label for='%s'>%s%s</label>", $input, htmlspecialchars($this->id), htmlspecialchars($this->label), $this->required ? ' <b>*</b>' : '');
         } else {
             $output .= $input;
         }
