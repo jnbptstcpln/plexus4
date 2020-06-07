@@ -26,6 +26,7 @@ trait ControlerAPI {
      */
     protected function success($payload) {
         $response = $this->getApplication()->getResponse();
+        $response->setStatusCode(200);
         $response->json(
             [
                 "status" => 200,
