@@ -389,6 +389,86 @@ class ModelManager {
     }
 
     /**
+     * @param ModelSelector|array ...$params
+     * @return ModelCollection
+     * @throws ModelException
+     */
+    public function count(...$params) {
+        if (count($params) == 1 && is_array($params[0])) {
+            // Param is an array with value, we perform a simple WHERE .. [AND ...] query
+            $sql = $this->build_count_request($params[0]);
+            $request = $this->database->prepare($sql);
+            if (!$request->execute($params[0])) {
+                throw new ModelException(Text::format("Une erreur est survenue lors du comptage du modèle '{}' ({}) ({})", $this->modelName, $sql, json_encode($params)));
+            };
+
+            $data = $request->fetchAll(\PDO::FETCH_ASSOC);
+
+        } else {
+            // Params are multiple ModelSelector, we build nd execute a QueryBuilder
+
+            $qb = $this->getQueryBuilder();
+            $qb->select('COUNT(*) AS counter');
+            $dataMapping = [];
+
+            foreach ($params as $param) {
+                if ($param instanceof ModelSelector) {
+                    switch ($param->getType()) {
+                        case ModelSelector::WHERE:
+                            $qb->where($param->getCondition());
+                            $dataMapping = array_merge($dataMapping, $param->getMapping());
+                            break;
+                        case ModelSelector::ORDER:
+                            $qb->order($param->getCondition(), $param->getOptions()['order']);
+                            break;
+                        case ModelSelector::GROUP:
+                            $qb->group($param->getCondition());
+                            break;
+                        case ModelSelector::LIMIT:
+                            $qb->limit($param->getCondition());
+                            break;
+                        case ModelSelector::OFFSET:
+                            $qb->offset($param->getCondition());
+                            break;
+                    }
+                }
+            }
+
+            try {
+                $data = $qb->execute($dataMapping);
+            } catch (\Throwable $exception) {
+                throw new ModelException(Text::format("Une erreur est survenue lors de la sélection du modèle '{}' ({}) ({})", $this->modelName, $qb->query(), json_encode($dataMapping)), 0, $exception);
+            }
+        }
+
+        return intval($data[0]['counter']);
+    }
+
+    /**
+     * @param $model
+     * @return string
+     */
+    protected function build_count_request($model) {
+        // Make sure we already have the structure of the table
+        $this->build_structure();
+        $sql = "SELECT COUNT(*) AS counter  FROM $this->modelName";
+        if (count($model) > 0) {
+            $sql .= " WHERE ";
+            $acc = 0;
+            foreach ($this->structure as $column) {
+                if (array_key_exists($column['name'], $model)) {
+                    $acc += 1;
+                    if ($acc > 1) {
+                        $sql .= " AND ";
+                    }
+                    $sql .= $column['name']." = :".$column['name'];
+                }
+            }
+        }
+        return $sql;
+    }
+
+    /**
      * @return Model
      * @throws Exception\ModelException
      */
