@@ -9,7 +9,7 @@
 namespace Plexus\DataType;
 
 
-class Collection {
+class Collection implements \IteratorAggregate {
 
     /**
      * @var array
@@ -182,6 +182,13 @@ class Collection {
             }
         }
         return new Collection(array_merge(...$to_merge));
+    }
+
+    /**
+     * @return CollectionIterator|\Traversable
+     */
+    public function getIterator() {
+        return new CollectionIterator($this);
     }
 
 }
