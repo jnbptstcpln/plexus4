@@ -44,7 +44,7 @@ class FileInput extends Input {
     /**
      * @return bool
      */
-    private function _validate() {
+    protected function _validate() {
         $this->errors = new Collection();
 
         if ($this->required) {
@@ -55,7 +55,7 @@ class FileInput extends Input {
         }
 
         $this->validators->each(function($i, AbstractValidator $validator) {
-            if (!$validator->validate($this->getValue())) {
+            if (!$validator->validate($this->getFile())) {
                 $this->errors->push($validator->getError());
             }
             return $validator->getStopValidation();
@@ -70,6 +70,14 @@ class FileInput extends Input {
     public function setValue($value) {
         $this->file = isset($_FILES[$this->name]) ? $_FILES[$this->name] : null;
         return $this;
+    }
+
+    /**
+     * @param $value
+     * @return FileInput|Input
+     */
+    public function setDisplayValue($value) {
+        return $this->setValue($value);
     }
 
     /**
