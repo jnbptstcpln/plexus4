@@ -73,6 +73,10 @@ class QueryBuilder
      */
     public $from;
 
+    /**
+     * QueryBuilder constructor.
+     * @param \PDO|null $database
+     */
     public function __construct($database=null) {
         $this->database = $database;
     }
