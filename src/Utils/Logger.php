@@ -19,12 +19,12 @@ class Logger {
     static public function log($data, $log_dirpath, $identifier=null) {
 
         if ($data instanceof \Throwable) {
-            Logger::logThrowable($data, $log_dirpath, $identifier);
+            Logger::logThrowable($data, $identifier, $log_dirpath);
             return;
         }
 
         if ($identifier !== null && strlen($identifier) > 0 && $identifier != 'application') {
-            static::_log($data, $log_dirpath, $identifier);
+            static::_log($data, $identifier, $log_dirpath);
         }
         static::_log($data, 'application', $log_dirpath);
     }
